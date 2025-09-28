@@ -9,27 +9,21 @@ const uint16_t id = 0xabcd;
 uint16_t input = 0xcccc;
 
 void setup() {
-  // put your setup code here, to run once:
+
   pinMode(DATA_PIN, OUTPUT);
   Serial.begin(9600);
 }
 
 void loop() {
-
   readInput();
   write(id);
   write(input);
-//  Serial.print(input & 0x00ff);
-//  Serial.print("\t");
-//  Serial.println((input & 0xff00) >> 8);
-//  Serial.print(analogRead(LEFT_PIN));
-//  Serial.print("\t");
-//  Serial.println(analogRead(RIGHT_PIN));
 }
 
 
 void readInput()
 {
+  //shift the bits by 8 to make space for both inputs in one variable.
   input = (input << 8) | (map(analogRead(LEFT_PIN), 0, 1023 , 0, 255) & 0x00ff);
   input = (input << 8) | (map(analogRead(RIGHT_PIN), 0, 1023, 0, 255) & 0x00ff);
 }
@@ -41,8 +35,11 @@ void write(uint16_t data)
   }
 }
 
+
 void sendBit(bool bit)
 {
+  //encrypt the bits to prevent dataloss
+  //high = 1,0  low = 0,1
   digitalWrite(DATA_PIN, bit);
   delayMicroseconds(BIT_TIME/2);
   digitalWrite(DATA_PIN, !bit);

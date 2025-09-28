@@ -44,26 +44,22 @@ void loop(){
   {
     for (int i = 0; i < 16; ++i) {
       short bit = readBit();
+      //if there is a "corrupt" bit
       if (bit > 1)
       {
+        // exit the loop
         return;
       }
       buffer = (buffer << 1) | (bit & 0x01);
     }
 
-    //                                 _                                     _ 
-    //  ___ ___  _ __  _ __   ___  ___| |_    __ _ _ __ ___  _   _ _ __   __| |
-    // / __/ _ \| '_ \| '_ \ / _ \/ __| __|  / _` | '__/ _ \| | | | '_ \ / _` |
-    //| (_| (_) | | | | | | |  __/ (__| |_  | (_| | | | (_) | |_| | | | | (_| |
-    // \___\___/|_| |_|_| |_|\___|\___|\__|  \__, |_|  \___/ \__,_|_| |_|\__,_|
-    //                                        |___/                             
-    Serial.println(mapInput((buffer & (0xff00)) >> 8, LEFT_CENTER, leftMaxRange));
     leftMotor.write(mapInput((buffer & (0xff00)) >> 8, LEFT_CENTER, leftMaxRange));
     rightMotor.write(mapInput(buffer & (0x00ff), RIGHT_CENTER, rightMaxRange)); 
   }
  
 }
 
+//unused helper function for debugging
 String toHex(uint16_t bits)
 {
   String strn;
@@ -78,10 +74,13 @@ String toHex(uint16_t bits)
   return strn;
 }
 
+
 void read(){
+  //adds the bit to the buffer
   buffer = (buffer << 1) | (readBit() & 0x01);
 }
 
+//maps the input to be less sensitive in the middle of the range to give more control
 int mapInput(short input, int center, int range)
 {
   double x = ((double)input)/255.0d;
@@ -89,6 +88,7 @@ int mapInput(short input, int center, int range)
   return constrain(map(((3*pow((1.0d-x),2.0d)*x+pow(x, 3.0d))*255.0d), 4, 251, center - (range * MAX_POWER), center + (range * MAX_POWER)), center - (range * MAX_POWER), center + (range * MAX_POWER));
 }
 
+//reads and decrypts the bits
 short readBit(){
   bool first = digitalRead(DATA_PIN);
   delayMicroseconds(BIT_TIME/2);
@@ -99,5 +99,3 @@ short readBit(){
   if (!first && second) return 0;
   return 2; // fallback
 }
-
-
